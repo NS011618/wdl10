@@ -31,6 +31,7 @@ app.use(session({
   }
 }));
 
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -38,13 +39,21 @@ passport.use(new LocalStrategy({
   usernameField:'email',
   passwordField:'password'
 },(username,password,done)=>{
-  User.findOne({where:{email:username,password:password}})
-  .then((user)=>{
-    return done(null,user)
+  User.findOne({where:{email:username}})
+  .then(async (user)=>{
+   const result= await bcrypt.compare(password,user.password)
+   if(result){
+    return done(null,user);
+   }else{
+    return done("Invalid password");
+   }
+    
   }).catch((error)=>{
     return (error);
   })
 }));
+
+
 
 passport.serializeUser((user,done)=>{
   console.log("serial user in session",user.id);
@@ -142,10 +151,26 @@ app.post("/users",async (request, response)=>{
    console.log(error);
   }
 })
+//login page details
+app.get("/login",async (request,response)=>{
+    response.render("login",{csrfToken:request.csrfToken()});
+});
+
+app.post("/session",passport.authenticate('local',{failureRedirect:"/login"}),async (request,response)=>{
+   console.log(request.user);
+   response.redirect("/todos");
+});
+//signout page details
+app.get("/signout",async (request,response,next)=>{
+   request.logOut((err)=>{
+    if(err){return next(err);}
+    response.redirect("/");
+   })
+})
 
 
 //app.post()
-app.post("/todos", async (request, response) => {
+app.post("/todos",connectEnsureLogin.ensureLoggedIn(), async (request, response) => {
   console.log("creating new todo", request.body);
   try {
     // eslint-disable-next-line no-unused-vars
@@ -163,7 +188,7 @@ app.post("/todos", async (request, response) => {
 
 
 //app.put
-app.put("/todos/:id", async (request, response) => {
+app.put("/todos/:id",connectEnsureLogin.ensureLoggedIn(), async (request, response) => {
   console.log("Mark Todo as completed:", request.params.id);
   const todo = await Todo.findByPk(request.params.id);
   try {
@@ -176,7 +201,7 @@ app.put("/todos/:id", async (request, response) => {
 });
 
 //app.delete
-app.delete("/todos/:id", async (request, response) => {
+app.delete("/todos/:id",connectEnsureLogin.ensureLoggedIn(), async (request, response) => {
   console.log("delete a todo with ID:", request.params.id);
   try {
     await Todo.remove(request.params.id);
