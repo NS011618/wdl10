@@ -83,12 +83,12 @@ app.get("/", async (request, response) => {
 });
 
 app.get("/todos",connectEnsureLogin.ensureLoggedIn() ,async (request, response) => {
-  const loggedInUser=request.user.id;
+  const loggedinuser=request.user.id;
   const allTodos = await Todo.getTodos();
-  const overdue = await Todo.overdue(loggedInUser);
-  const dueLater = await Todo.dueLater(loggedInUser);
-  const dueToday = await Todo.dueToday(loggedInUser);
-  const completedItems = await Todo.completedItems(loggedInUser);
+  const overdue = await Todo.overdue(loggedinuser);
+  const dueLater = await Todo.dueLater(loggedinuser);
+  const dueToday = await Todo.dueToday(loggedinuser);
+  const completedItems = await Todo.completedItems(loggedinuser);
   if (request.accepts("html")) {
     response.render("todo", {
       title: "Todo Application",
