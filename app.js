@@ -20,6 +20,9 @@ const passport=require('passport');
 const connectEnsureLogin=require('connect-ensure-login');
 const session=require('express-session');
 const LocalStrategy=require('passport-local');
+const bcrypt=require('bcrypt');
+
+const saltRounds=10;
 
 app.use(session({
   secret:"my-super-secret-key-2172817261561562",
@@ -118,12 +121,16 @@ app.get("/signup",async (request, response)=>{
 })
 //users page
 app.post("/users",async (request, response)=>{
+  //hash password using bcrpt
+  const hashedpwd=await bcrypt.hash(request.body.password,saltRounds);
+  console.log(hashedpwd);
+  //have to create the user here
   try{
     const user= await User.create({
       firstName:request.body.firstName,
       lastName:request.body.lastName,
       email:request.body.email,
-      password:request.body.password
+      password:hashedpwd
     });
     request.login(user,(err)=>{
       if(err){
