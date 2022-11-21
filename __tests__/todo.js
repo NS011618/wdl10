@@ -12,6 +12,16 @@ function extractCsrfToken(res) {
   return $("[name=_csrf]").val();
 }
 
+const login_he=async(agent,username,password)=>{
+  let res=await agent.get("/login");
+  let csrfToken=extractCsrfToken(res);
+  res=await agent.post("/session").send({
+    email:username,
+    password:password,
+    _csrf:csrfToken,
+  });
+};
+
 describe("Todo test suite ", () => {
   beforeAll(async () => {
     await db.sequelize.sync({ force: true });
@@ -34,8 +44,19 @@ describe("Todo test suite ", () => {
     });
     expect(response.statusCode).toBe(302); //http status code
   });
+  test("Sign out details", async () => {
+    let res = await agent.get("/todos");
+    expect(res.statusCode).toBe(200);
+    res=await agent.get("/signout");
+    expect(res.statusCode).toBe(302);
+    res=await agent.get("/todos");
+    expect(res.statusCode).toBe(302); //http status code
+  });
+
 
   test("Create new todo", async () => {
+    const agent =request.agent(server);
+    await login_he(agent,"userb@gmail.com","0108");
     const res = await agent.get("/todos");
     const csrfToken = extractCsrfToken(res);
     const response = await agent.post("/todos").send({
@@ -47,7 +68,9 @@ describe("Todo test suite ", () => {
     expect(response.statusCode).toBe(302); //http status code
   });
 
-  test("Mark todo as completed (Updating Todo)", async () => {
+  test("Mark todo as completed -Updating Todo", async () => {
+    const agent =request.agent(server);
+    await login_he(agent,"userb@gmail.com","0108");
     let res = await agent.get("/todos");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/todos").send({
@@ -75,6 +98,8 @@ describe("Todo test suite ", () => {
   });
 
   test(" Delete todo using ID", async () => {
+    const agent =request.agent(server);
+    await login_he(agent,"userb@gmail.com","0108");
     let res = await agent.get("/todos");
     let csrfToken = extractCsrfToken(res);
     await agent.post("/todos").send({
