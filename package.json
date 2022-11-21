@@ -19,6 +19,7 @@
   "dependencies": {
     "bcrypt": "^5.1.0",
     "connect-ensure-login": "^0.1.1",
+    "connect-flash": "^0.1.1",
     "cookie": "^0.5.0",
     "cookie-parser": "^1.4.6",
     "csurf": "^1.11.0",

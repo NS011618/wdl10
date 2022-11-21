@@ -19,10 +19,13 @@ app.use(csrf("this_should_be_32_charactes_long", ["POST", "PUT", "DELETE"]));
 const passport=require('passport');
 const connectEnsureLogin=require('connect-ensure-login');
 const session=require('express-session');
+const flash=require("connect-flash");
+app.set("views",path.join(__dirname,"views"));
 const LocalStrategy=require('passport-local');
 const bcrypt=require('bcrypt');
 
 const saltRounds=10;
+app.use(flash());
 
 app.use(session({
   secret:"my-super-secret-key-2172817261561562",
@@ -45,7 +48,7 @@ passport.use(new LocalStrategy({
    if(result){
     return done(null,user);
    }else{
-    return done("Invalid password");
+    return done(null,false,{message:"Invalid password"});
    }
     
   }).catch((error)=>{
