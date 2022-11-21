@@ -70,10 +70,11 @@ module.exports = (sequelize, DataTypes) => {
         order: [["id", "ASC"]],
       });
     }
-    static async remove(id) {
+    static async remove(id,userId) {
       return this.destroy({
         where: {
           id,
+          userId
         },
       });
     }
