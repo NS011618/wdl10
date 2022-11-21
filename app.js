@@ -83,12 +83,12 @@ app.get("/", async (request, response) => {
 });
 
 app.get("/todos",connectEnsureLogin.ensureLoggedIn() ,async (request, response) => {
-  
+  const loggedInUser=request.user.id;
   const allTodos = await Todo.getTodos();
-  const overdue = await Todo.overdue();
-  const dueLater = await Todo.dueLater();
-  const dueToday = await Todo.dueToday();
-  const completedItems = await Todo.completedItems();
+  const overdue = await Todo.overdue(loggedInUser);
+  const dueLater = await Todo.dueLater(loggedInUser);
+  const dueToday = await Todo.dueToday(loggedInUser);
+  const completedItems = await Todo.completedItems(loggedInUser);
   if (request.accepts("html")) {
     response.render("todo", {
       title: "Todo Application",
@@ -177,9 +177,10 @@ app.post("/todos",connectEnsureLogin.ensureLoggedIn(), async (request, response)
     await Todo.addTodo({
       title: request.body.title,
       dueDate: request.body.dueDate,
-      commpleted: false,
+      userId:request.user.id,
+      completed: false,
     });
-    return response.redirect("/");
+    return response.redirect("/todos");
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);
